@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="UTF-8"><title>Main</title></head>
+<body>
+    <div id="app">
+        <hr>
+        <table border="1">
+            <caption>Key Value Storage</caption>
+            <tr>
+                <th style="width: 100px;">Key</th>
+                <th style="width: 100px;">Value</th>
+                <th style="width: 100px;">TTL</th>
+                <th style="width: 100px;">Edit</th>
+                <th style="width: 100px;">Delete</th>
+            </tr>
+            <tr v-for="entry in table">
+                <td>{{ entry[0] }}</td>
+                <td>{{ entry[1] }}</td>
+                <td>{{ entry[2] }}</td>
+                <td><button style="width: 100px;" v-on:click="editFunc(entry[0], entry[1])"> Edit </button></td>
+                <td><button style="width: 100px;" v-on:click="deleteFunc(entry[0])"> Delete </button></td>
+            </tr>
+        </table>
+        <br>
+        <button onclick="refresh()">Update Table</button>
+        <hr>
+        <br>
+        <span>Key</span>
+        <input v-model="key" type="text"/>
+        <span>Value</span>
+        <input v-model="value" type="text"/>
+        <span>TTL</span>
+        <input v-model="ttl" type="text"/>
+        <button v-on:click="goFunc()">Go</button>
+        <hr>
+    </div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            key: "",
+            value: "",
+            ttl: "",
+            table: []
+        },
+
+        methods: {
+            editFunc: function(skey, svalue) {
+                this.key = skey,
+                this.value = svalue,
+                this.ttl = "100"
+            },
+            deleteFunc: function(skey) {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        refresh();
+                    }
+                };
+                var data = ["delete", skey];
+                xhttp.open("POST", JSON.stringify(data), true);
+                xhttp.send();
+            },
+            goFunc: function() {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        refresh();
+                    }
+                };
+                var data = ["update", this.key, this.value, Number(this.ttl)];
+                xhttp.open("POST", JSON.stringify(data), true);
+                xhttp.send();
+            }
+        }
+    });
+    refresh();
+
+    function refresh() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                app.table = JSON.parse(this.responseText);
+            }
+        };
+        xhttp.open("GET", "get_table", true);
+        xhttp.send();
+    }
+</script>
+</html>
